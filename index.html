@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Impressão por Produto - POSTO MARIA JOÃO</title>
+<style>
+  body {
+    font-family: monospace;
+    width: 80mm;
+    margin: 0 auto;
+    padding: 10px;
+    font-size: 11pt;
+    background: #fff;
+  }
+  h2 {
+    text-align: center;
+    margin: 0 0 10px 0;
+    font-size: 14pt;
+  }
+  label {
+    display: block;
+    margin-top: 10px;
+  }
+  select, input[type="number"] {
+    width: 100%;
+    padding: 5px;
+    font-size: 11pt;
+    margin-top: 5px;
+    box-sizing: border-box;
+  }
+  button {
+    display: block;
+    margin: 15px auto;
+    padding: 10px 20px;
+    font-size: 12pt;
+    background: #003366;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  button:hover {
+    background: #0059b3;
+  }
+  #ticket {
+    white-space: pre-wrap;
+    margin-top: 20px;
+  }
+  @media print {
+    button, select, input {
+      display: none;
+    }
+    body {
+      margin: 0;
+      padding: 5mm;
+      width: 80mm;
+      font-size: 10pt;
+    }
+  }
+</style>
+</head>
+<body>
+
+<h2>POSTO MARIA JOÃO</h2>
+
+<label for="produto">Selecione o Produto:</label>
+<select id="produto">
+  <option value="Etanol">Etanol</option>
+  <option value="Gasolina">Gasolina</option>
+  <option value="Diesel S10">Diesel S10</option>
+  <option value="Diesel S500">Diesel S500</option>
+</select>
+
+<label for="temp">Temperatura (°C):</label>
+<input type="number" id="temp" value="20" min="0" max="100" step="0.1" />
+
+<button onclick="gerarTicket()">Gerar Ticket e Imprimir</button>
+
+<div id="ticket"></div>
+
+<script>
+const combustiveis = {
+  "Etanol": { dens20: 789, beta: 0.0008 },
+  "Gasolina": { dens20: 720, beta: 0.0009 },
+  "Diesel S10": { dens20: 835, beta: 0.0008 },
+  "Diesel S500": { dens20: 840, beta: 0.0008 }
+};
+
+function gerarTicket() {
+  const produtoSelecionado = document.getElementById('produto').value;
+  const T = parseFloat(document.getElementById('temp').value);
+  if (isNaN(T) || T < 0 || T > 100) {
+    alert("Digite uma temperatura válida entre 0°C e 100°C.");
+    return;
+  }
+
+  const c = combustiveis[produtoSelecionado];
+  const densCorrigida = c.dens20 - c.beta * (T - 20) * c.dens20;
+  const densGCm3 = densCorrigida * 0.001;
+
+  let ticketText = "";
+  ticketText += "POSTO MARIA JOÃO\n";
+  ticketText += "----------------------------\n";
+  ticketText += `Produto: ${produtoSelecionado}\n`;
+  ticketText += `Temperatura: ${T.toFixed(1)} °C\n\n`;
+  ticketText += `Densidade a 20°C: ${c.dens20.toFixed(1)} kg/m³\n`;
+  ticketText += `Densidade a T:    ${densCorrigida.toFixed(2)} kg/m³\n`;
+  ticketText += `Densidade a T:    ${densGCm3.toFixed(4)} g/cm³\n`;
+  ticketText += "----------------------------\n";
+
+  const ticketDiv = document.getElementById("ticket");
+  ticketDiv.textContent = ticketText;
+
+  setTimeout(() => {
+    window.print();
+  }, 500);
+}
+</script>
+
+</body>
+</html>
